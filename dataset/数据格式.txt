@@ -1,0 +1,62 @@
+1. 训练数据
+	[网页1，网页2，网页3，...，网页n]	n大约40
+     网页：
+	真值数据，假值数据，假值数据，假值数据，真值数据，... 
+	真假比例≈1：4
+	真假比例≈1：3
+	真假比例≈1：2
+	真假比例≈1：1
+trainData_630_1_4
+
+2. 测试数据(不要求比例)
+	[网页n+1，网页n+2，...，网页n+i]	i大约5
+testData
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. 应用数据
+	[网页1，]		k大约5
+    网页：
+	[    {A={A1={属性},A2={属性},A3={属性},...,Aj}，B={属性}}，rel=Ture/False}，   ]  
+    Aj={
+	"id":XXX,
+	"position":{
+		"left_up":[XXX,XXX],
+		"right_down":[XXX,XXX]
+		},
+	"xpath":"XXXXXXXXXXXXXXXXXXXX",
+	"context":{
+		"data":}
+
+            }
+
+   B={
+	"id":XXX,
+	"E_name":     ，
+	"position":{
+		"left_up":[XXX,XXX],
+		"right_down":[XXX,XXX]
+		},
+	"xpath":"XXXXXXXXXXXXXXXXXXXX",
+	"context":{
+		"data":}
+
+            }
+
+[{A1,B},{A2,B},{A3,B},{A4,B},{A1,B},{A2,B},{A3,B},{A4,B},{A1,B},{A2,B},{A3,B},{A4,B},{A1,B},{A2,B},{A3,B},{A4,B},]
+
+[                {A={A1,A2,A3,A4},B,rel},                    {A1,A2,A3,A4,B}]
+
+
+
+for(B){
+	for(A){
+	data.append(A,B)
+	}	
+}
+for(B){
+	TEMP={}
+	for(A){
+		TEMP.APPEND(A)
+	}	
+	data.append(TEMP,B,rel="")
+}	
