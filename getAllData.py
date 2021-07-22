@@ -10,62 +10,49 @@ id_A = 0
 id_B = 0
 
 
-def getAllElements(url):
+def getAllElements(driver):
     print('start script')
     option = webdriver.ChromeOptions()
     option.add_argument('headless')
-    driver = webdriver.Chrome(
-        executable_path=r"G:\anaconda\Lib\site-packages\selenium\webdriver\chrome\chromedriver.exe")
-    # driver = webdriver.Chrome(r"D:\Selenium WebDriver\Chrome\chromedriver_win32\chromedriver.exe")
-    driver.get(url)
-    driver.maximize_window()
     sleep(1)
     label_list = []
     input_list = []
     btn_list = []
     link_list = []
+    xpath_disc = {}
     xpath_list = []
     # file_list = []
 
     # 获取页面所有Xpath
     pageSouce = driver.page_source
     tree = etree.HTML(pageSouce)
-
-    # print(etree.tostring(tree))
-
-    # print("====="+driver.find_element_by_xpath('/html/body/div[3]/div/div/div/div[1]/div/div/div/div/div[1]/form/div[1]/div/input').get_property('name'))
-    # print("=====" + driver.find_element_by_xpath('/html/body/div[3]/div/div/div/div[1]/div/h2').text)
-
-    # print("=====2" + driver.find_element_by_xpath('/html/body/div[2]/div/div/div/div[1]/div/div/div/div/div[1]/form/div[1]/div/input').get_property('name'))
-    # print("=====2" + driver.find_element_by_xpath('/html/body/div[2]/div/div/div/div[1]/div/h2').text)
-
     # 遍历Xpath路径
     for element in tree.iter():
         xpath = element.getroottree().getpath(element)
         # print(xpath)
         if str(xpath).find('comment') < 0:
             if str(xpath).find('h2') >= 0:
-                xpath_list.append(str(xpath))
+                xpath_disc[str(xpath)] = str(xpath)
             if str(xpath).find('th') >= 0:
-                xpath_list.append(str(xpath))
+                xpath_disc[str(xpath)] = str(xpath)
             if str(xpath).find('label') >= 0:
-                xpath_list.append(str(xpath))
+                xpath_disc[str(xpath)] = str(xpath)
             if str(xpath).find('input') >= 0:
-                xpath_list.append(str(xpath))
+                xpath_disc[str(xpath)] = str(xpath)
             if str(xpath).find('span') >= 0:
-                xpath_list.append(str(xpath))
+                xpath_disc[str(xpath)] = str(xpath)
             # if str(xpath).find('div') >= 0:
             #     xpath_list.append(str(xpath))
 
     # 查找所有label控件
-    getLabel('//h2', xpath_list, label_list, driver)
-    getLabel('//th', xpath_list, label_list, driver)
-    getLabel('//label', xpath_list, label_list, driver)
-    getLabel('//span', xpath_list, label_list, driver)
+    getLabel('//h2', xpath_disc, label_list, driver)
+    getLabel('//th', xpath_disc, label_list, driver)
+    getLabel('//label', xpath_disc, label_list, driver)
+    getLabel('//span', xpath_disc, label_list, driver)
     # getLabel('//div', xpath_list, label_list, driver)
 
     # 查找所有Input控件
-    getInput('//input', xpath_list, input_list, driver, btn_list, link_list)
+    getInput('//input', xpath_disc, input_list, driver, btn_list, link_list)
 
     jsonInfo = {}
     jsonInfo['A'] = label_list
@@ -76,7 +63,7 @@ def getAllElements(url):
 # 获取label数据
 
 
-def getLabel(tagName, xpath_list, label_list, driver):
+def getLabel(tagName, xpath_disc, label_list, driver):
     h2Elements = driver.find_elements_by_xpath(tagName)
 
     for element in h2Elements:
@@ -97,11 +84,10 @@ def getLabel(tagName, xpath_list, label_list, driver):
             yrightDown = ylocation + yheight
 
             objClass = element.get_attribute("class")
-            # objProperty = "Class:" + str(objClass) + " Text:" + str(text)
             objProperty = str(text)
             # 获取Xpath
             xpath = ''
-            for i in xpath_list:
+            for i in xpath_disc.keys():
                 a = driver.find_element_by_xpath(i).text
                 if a == text:
                     xpath = i
@@ -116,22 +102,16 @@ def getLabel(tagName, xpath_list, label_list, driver):
             position = {'left_up': (xleftUp, yleftUp),
                         'right_down': (xrightDown, yrightDown)}
             data['position'] = position
-
-            # ancestor = {'xpath': 'xxxx'}
-            # print(xpath)
             data['xpath'] = xpath
 
             context = {'data': objProperty}
             data['context'] = context
-
-            #objJson = json.dumps(data, ensure_ascii=False)
-            # print(objJson)
             label_list.append(data)
 
 # 获取Input数据
 
 
-def getInput(tagName, xpath_list, input_list, driver, btn_list, link_list):
+def getInput(tagName, xpath_disc, input_list, driver, btn_list, link_list):
 
     inputElements = driver.find_elements_by_xpath('//input')
 
@@ -139,7 +119,7 @@ def getInput(tagName, xpath_list, input_list, driver, btn_list, link_list):
         name = element.get_property("name")
         type = element.get_property("type")
         # 获取所有的入力框的input
-        if (len(name) > 0 and (type == 'text' or type == 'password')):
+        if (len(name) > 0 and (type == 'text' or type == 'password' or type == 'email')):
             # 左上角X,Y坐标
             xlocation = element.location.get('x')
             ylocation = element.location.get('y')
@@ -167,7 +147,7 @@ def getInput(tagName, xpath_list, input_list, driver, btn_list, link_list):
 
             # 获取Xpath
             xpath = ''
-            for i in xpath_list:
+            for i in xpath_disc.keys():
                 a = driver.find_element_by_xpath(i).get_property("name")
                 if a == name:
                     xpath = i
@@ -188,6 +168,7 @@ def getInput(tagName, xpath_list, input_list, driver, btn_list, link_list):
 
             context = {'data': objProperty}
             data['context'] = context
+            data['type'] = type
             data['realId'] = str(realId)
             input_list.append(data)
         # 获取提交等按钮的list
@@ -196,14 +177,14 @@ def getInput(tagName, xpath_list, input_list, driver, btn_list, link_list):
             type = element.get_property("type")
             xpath = ''
             if (text is not None and len(text) > 0):
-                for i in xpath_list:
+                for i in xpath_disc.keys():
                     a = driver.find_element_by_xpath(i).get_property("value")
                     if a == text:
                         xpath = i
             jsonInfo = {}
             data = json.loads(json.dumps(jsonInfo))
-            data['text'] = text
+            data['A_text'] = text
             data['type'] = type
             data['btn'] = "button"
-            data['xpath'] = xpath
+            data['B_xPath'] = xpath
             btn_list.append(data)

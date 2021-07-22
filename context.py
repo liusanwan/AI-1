@@ -28,9 +28,6 @@ def handleContext(A_cont, B_cont):
     B_text = B_cont['data']
     # 文本处理
     # 如果 A_cont 或者 B_cont 存在空字符串 ""
-    # ext_score = 0
-    # if ":" == A_text[-1] or "：" == A_text[-1]:
-    #     ext_score = 0.1
     if A_text == "" or B_text == "" or A_text == " " or B_text == " ":
         return 0.0
 

@@ -6,10 +6,13 @@ import numpy as np
 from xpath import handleXpath
 from context import handleContext
 from position import handlePosition
+from position_tf import handlePosition_tf
+import tflearn
+import argparse
 
 
 def sigmoid(num):
-    return 1/(1+tf.exp(-num))
+    return 1/(1+np.exp(-num))
 
 
 def loadDataJson(url):
@@ -22,31 +25,8 @@ def loadDataJson(url):
     return data
 
 
-def translate(data):
-    # [{
-    # 'id': '1',
-    # 'mid_dist': 1.6016319802001957,
-    # 'nearest_dist': 0.8,
-    # 'anceMatchRate': 0.0,
-    # 'contMatchRate': 0.0,
-    # 'row': -1,
-    # },
-    # ] (lenth = the num of A for one B)
-    data_arr = np.zeros((len(data), 5))
-    # 赋值
-    for i in range(len(data)):
-        data_arr[i][0] = data[i]["mid_dist"]
-        data_arr[i][1] = data[i]["nearest_dist"]
-        data_arr[i][2] = data[i]["anceMatchRate"]
-        data_arr[i][3] = data[i]["contMatchRate"]
-        data_arr[i][4] = data[i]["row"]
-    return data_arr
-
-
 def handleTestData(listA, listB):
     test = []
-    #print("listA in handleTestData:", listA)
-    #print("listB in handleTestData:", listB)
     for i in listB:
         temp = []
         for j in listA:
@@ -58,9 +38,6 @@ def handleTestData(listA, listB):
             #     "contMatchRate": -1,
             #     "row": 0,
             # }
-            #print("i in for*2:", i)
-            #print("j in for*2:", j)
-            # print(j["position"])
             t = []
             t1, t2, t5 = handlePosition(
                 j["position"], i["position"])
@@ -75,6 +52,42 @@ def handleTestData(listA, listB):
             t.append(t5)
             temp.append(t)
         test.append(temp)
+    print("A 和 B 一一对应已完成！")
+    return np.array(test)
+
+
+def handleTestData_tf(listA, listB):
+    test = []
+    for i in listB:
+        temp = []
+        for j in listA:
+            # t = {
+            #     "id": -1,
+            #     "mid_dist": -1,
+            #     "nearest_dist": -1,
+            #     "anceMatchRate": -1,
+            #     "contMatchRate": -1,
+            #     "row": 0,
+            # }
+            t = []
+            t1, t2, t5, t6, t7, t8, t9 = handlePosition_tf(
+                j["position"], i["position"])
+            t3 = handleXpath(
+                j["xpath"], i["xpath"])
+            t4 = handleContext(
+                j["context"], i["context"])
+            t.append(t1)
+            t.append(t2)
+            t.append(t3)
+            t.append(t4)
+            t.append(t5)
+            t.append(t6)
+            t.append(t7)
+            t.append(t8)
+            t.append(t9)
+            temp.append(t)
+        test.append(temp)
+    print("A 和 B 一一对应已完成！")
     return np.array(test)
 
 
@@ -85,7 +98,7 @@ def getData(url):
 
 def getWB(url):
     data = loadDataJson(url)
-    #print("data in getWB:", data)
+    # print("data in getWB:", data)
     return data[0]["w"], data[0]["b"]
 
 
@@ -94,22 +107,17 @@ def logistic_match(data, url_w_b):
     # 输出参数：res=[{A_text=" ", A_id=num, btn= },{},...,{}]
     # 第一步：提取需要处理的数据    data = { A=[A1,A2,...,An], B=[B1,B2,...,Bn] }
     # A, B = getData(url_data)
-    print("data in logistic_match:", data)
     print("正在进行逻辑回归算法匹配!")
     A = data["A"]
     B = data["B"]
-    print("A in logistic_match:")
-    print(A)
-    print("B in logistic_match:")
-    print(B)
     # 第二步：提取需要的 w, b       w=[], b=[]
     w, b = getWB(url_w_b)
 
     # 第三步：计算每个B对应的每个A的维度值
     # test = np.arr格式 [ [[x11,x12,x13,x14,x15],[x21,x22,x23,x24,x25],...,[xn1,xn2,xn3,xn4,xn5]]  ,..., ]
     test = handleTestData(A, B)
+    print(type(test))
     len_test = len(test)
-
     res = []  # res记录每个B对应的最优匹配的A所需的内容
     for i in range(len_test):  # 循环每个B
         # 计算每个A对于B的sig()值
@@ -117,16 +125,76 @@ def logistic_match(data, url_w_b):
         for j in range(len(test[i])):
             val = w*(test[i][j].T)+b
             sig = sigmoid(sum(val))
-            temp_res.append(float(sig))
+            temp_res.append(sig)
+
         max_t_res = max(temp_res)
         if max_t_res < 0.68:
-            res.append("null")  # 如果认为没有与B匹配的A, 传入“null”
-        else:  # 如果认为有与B匹配的A, 传入响应的信息
-            print("max_t_res in l_m", max_t_res)
+
+            res.append({
+                "A_text": "",
+                "btn": "input",
+                "B_xPath": B[i]["xpath"],
+                "B_type": B[i]["type"]})  # 如果认为没有与B匹配的A, 传入“null”
+        else:  # 如果认为有与B匹配的A, 传入对应的信息
             max_index = temp_res.index(max_t_res)
+
             res.append({
                 "A_text": A[max_index]["context"]["data"],
                 "btn": "input",
-                "B_xPath": B[i]["xpath"]})
+                "B_xPath": B[i]["xpath"],
+                "B_type": B[i]["type"]})
+
+    return res
+
+
+def deepNetwork_match(data, model_url):
+    print("正在进行神经网络算法匹配!")
+    A = data["A"]
+    B = data["B"]
+
+    test = handleTestData_tf(A, B)
+
+    # Same parameters as of 'ApeNet'
+    inputData = tflearn.input_data(shape=[None, 9])
+    layer_1 = tflearn.fully_connected(
+        inputData, 32, activation='sigmoid', name='layer_1')
+    layer_2 = tflearn.fully_connected(
+        layer_1, 108, activation='sigmoid', name='layer_2')
+    layer_3 = tflearn.fully_connected(
+        layer_2, 64, activation='sigmoid', name='layer_3')
+    outputData = tflearn.fully_connected(
+        layer_3, 2, activation='softmax', name='output')
+    net = tflearn.regression(outputData)
+
+    # Load the trained model
+    model = tflearn.DNN(net)
+    model.load(model_url)
+
+    # Prob存着每个B与每个A对应的匹配概率值
+    Prob = []
+    res = []  # res记录每个B对应的最优匹配的A所需的内容
+    for i in range(len(test)):
+        prediction = model.predict(test[i])
+        # 选择概率最大的A
+        max_A_val = prediction.min(axis=0)
+        if max_A_val[0] > 0.5:  # 可认为没有A能代表这个B
+            res.append({
+                "A_text": "",
+                "btn": "input",
+                "B_xPath": B[i]["xpath"],
+                "B_type": B[i]["type"]})  # 如果认为没有与B匹配的A, 传入“null”
+        else:  # 可认为这个A能代表这个B
+            max_index = -1
+            # 从每个组数据中选择概率判断最大的A作为B的结果
+            for j in range(len(prediction)):
+                if prediction[j][0] == max_A_val[0]:
+                    max_index = j
+                    break
+            res.append({
+                "A_text": A[max_index]["context"]["data"],
+                "btn": "input",
+                "B_xPath": B[i]["xpath"],
+                "B_type": B[i]["type"]})
+        Prob.append(prediction)
 
     return res
