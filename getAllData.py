@@ -20,7 +20,6 @@ def getAllElements(driver):
     btn_list = []
     link_list = []
     xpath_disc = {}
-    xpath_list = []
     # file_list = []
 
     # 获取页面所有Xpath
@@ -29,7 +28,7 @@ def getAllElements(driver):
     # 遍历Xpath路径
     for element in tree.iter():
         xpath = element.getroottree().getpath(element)
-        # print(xpath)
+        # abc = driver.find_element_by_xpath(xpath)
         if str(xpath).find('comment') < 0:
             if str(xpath).find('h2') >= 0:
                 xpath_disc[str(xpath)] = str(xpath)
@@ -43,7 +42,7 @@ def getAllElements(driver):
                 xpath_disc[str(xpath)] = str(xpath)
             # if str(xpath).find('div') >= 0:
             #     xpath_list.append(str(xpath))
-
+    
     # 查找所有label控件
     getLabel('//h2', xpath_disc, label_list, driver)
     getLabel('//th', xpath_disc, label_list, driver)
@@ -62,9 +61,9 @@ def getAllElements(driver):
 
 # 获取label数据
 
-
 def getLabel(tagName, xpath_disc, label_list, driver):
     h2Elements = driver.find_elements_by_xpath(tagName)
+    
 
     for element in h2Elements:
         text = element.text
@@ -164,10 +163,12 @@ def getInput(tagName, xpath_disc, input_list, driver, btn_list, link_list):
                         'right_down': (xrightDown, yrightDown)}
             data['position'] = position
 
-            data['xpath'] = xpath
+            data['B_xPath'] = xpath
 
             context = {'data': objProperty}
             data['context'] = context
+            # yang
+            data['A_text'] = "姓名"
             data['type'] = type
             data['realId'] = str(realId)
             input_list.append(data)
