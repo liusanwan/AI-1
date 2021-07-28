@@ -11,6 +11,25 @@ import tflearn
 import argparse
 
 
+
+# Same parameters as of 'ApeNet'
+inputData = tflearn.input_data(shape=[None, 9])
+layer_1 = tflearn.fully_connected(
+    inputData, 32, activation='sigmoid', name='layer_1')
+layer_2 = tflearn.fully_connected(
+    layer_1, 108, activation='sigmoid', name='layer_2')
+layer_3 = tflearn.fully_connected(
+    layer_2, 64, activation='sigmoid', name='layer_3')
+outputData = tflearn.fully_connected(
+    layer_3, 2, activation='softmax', name='output')
+net = tflearn.regression(outputData)
+
+# Load the trained model
+model = tflearn.DNN(net)
+# model.load(model_url)
+
+
+
 def sigmoid(num):
     return 1/(1+np.exp(-num))
 
@@ -154,20 +173,20 @@ def deepNetwork_match(data, model_url):
 
     test = handleTestData_tf(A, B)
 
-    # Same parameters as of 'ApeNet'
-    inputData = tflearn.input_data(shape=[None, 9])
-    layer_1 = tflearn.fully_connected(
-        inputData, 32, activation='sigmoid', name='layer_1')
-    layer_2 = tflearn.fully_connected(
-        layer_1, 108, activation='sigmoid', name='layer_2')
-    layer_3 = tflearn.fully_connected(
-        layer_2, 64, activation='sigmoid', name='layer_3')
-    outputData = tflearn.fully_connected(
-        layer_3, 2, activation='softmax', name='output')
-    net = tflearn.regression(outputData)
+    # # Same parameters as of 'ApeNet'
+    # inputData = tflearn.input_data(shape=[None, 9])
+    # layer_1 = tflearn.fully_connected(
+    #     inputData, 32, activation='sigmoid', name='layer_1')
+    # layer_2 = tflearn.fully_connected(
+    #     layer_1, 108, activation='sigmoid', name='layer_2')
+    # layer_3 = tflearn.fully_connected(
+    #     layer_2, 64, activation='sigmoid', name='layer_3')
+    # outputData = tflearn.fully_connected(
+    #     layer_3, 2, activation='softmax', name='output')
+    # net = tflearn.regression(outputData)
 
-    # Load the trained model
-    model = tflearn.DNN(net)
+    # # Load the trained model
+    # model = tflearn.DNN(net)
     model.load(model_url)
 
     # Prob存着每个B与每个A对应的匹配概率值

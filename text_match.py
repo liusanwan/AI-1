@@ -32,6 +32,7 @@ def text_match(elements, text):
         if max_score < new_score:
             max_score = new_score
             max_index = i
-    if text == "" or text.isspace() == True:
+
+    if max_index==-1 or text == "" or text.isspace() == True:
         return "space"      # text是无效搜索, 前端main.py里面需要做出反应
     return elements[max_index]
