@@ -135,7 +135,6 @@ def logistic_match(data, url_w_b):
     # 第三步：计算每个B对应的每个A的维度值
     # test = np.arr格式 [ [[x11,x12,x13,x14,x15],[x21,x22,x23,x24,x25],...,[xn1,xn2,xn3,xn4,xn5]]  ,..., ]
     test = handleTestData(A, B)
-    print(type(test))
     len_test = len(test)
     res = []  # res记录每个B对应的最优匹配的A所需的内容
     for i in range(len_test):  # 循环每个B
@@ -200,8 +199,7 @@ def deepNetwork_match(data, model_url):
             res.append({
                 "A_text": "",
                 "btn": "input",
-                "B_xPath": B[i]["xpath"],
-                "B_type": B[i]["type"]})  # 如果认为没有与B匹配的A, 传入“null”
+                "B_xPath": B[i]["xpath"]})  # 如果认为没有与B匹配的A, 传入“null”
         else:  # 可认为这个A能代表这个B
             max_index = -1
             # 从每个组数据中选择概率判断最大的A作为B的结果
@@ -213,7 +211,7 @@ def deepNetwork_match(data, model_url):
                 "A_text": A[max_index]["context"]["data"],
                 "btn": "input",
                 "B_xPath": B[i]["xpath"],
-                "B_type": B[i]["type"]})
+                "A_xPath": A[max_index]["xpath"]})
         Prob.append(prediction)
 
     return res

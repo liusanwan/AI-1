@@ -28,9 +28,9 @@ driver = webdriver.Chrome()
 # url = "http://www.gezhongji.com/user/register"
 
 # testdata2
-url = "http://u.pageadmin.net/Reg/"
+# url = "http://u.pageadmin.net/Reg/"
 # 1
-# url = "http://wlwz.changsha.gov.cn/webapp/cs/register/register_2.htm"
+url = "http://wlwz.changsha.gov.cn/webapp/cs/register/register_2.htm"
 
 # url = "http://member.djjlll.com/register.html"
 
@@ -67,13 +67,12 @@ def loadChrome():
     objJson = getAllElements(driver)
     inputJson = {"A": objJson["A"], "B": objJson["B"]}
     btn_list = objJson["C"]
-    input_list = objJson["B"]
-    lable_list = objJson["A"]
     # yang
     # 调用logistic_match 算法
     res = deepNetwork_match(objJson, "match_deepNetworks_tf9589")
     # res = logistic_match(objJson, "best_para_w_b.txt")
     input_list = res
+    
 
     # button的颜色标记
     for element in btn_list:
@@ -113,6 +112,7 @@ for element in btn_list:
 for element in input_list:
     xpath = element['B_xPath']
     text = element['A_text']
+    print(text)
     b = driver.find_element_by_xpath(xpath)
     js_code = 'arguments[0].style.border = "2px green solid";arguments[0].style.color = "#0cf373";arguments[0].type="text";'
     
@@ -173,11 +173,16 @@ def showinfo(i):
             b = driver.find_element_by_xpath(xpath)
             b.clear()
             b.send_keys(value)
-            js_code = 'arguments[0].style.border = "2px yellow solid";arguments[0].style.color = "black";'
-            driver.execute_script(js_code, b)
+            js_codeB = 'arguments[0].style.border = "2px green solid";arguments[0].style.color = "black";'
+            driver.execute_script(js_codeB, b)
+            xpathA = element['A_xPath']
+            a = driver.find_element_by_xpath(xpathA)
+            js_codeA = 'arguments[0].style.border = "2px yellow solid";'
+            driver.execute_script(js_codeA, a)
             time.sleep(1)
-            js_code1 = 'arguments[0].style.border = "2px green solid";arguments[0].style.color = "black";'
-            driver.execute_script(js_code1, b)
+            js_code1 = 'arguments[0].style.border = "0px white solid";'
+            driver.execute_script(js_code1, a)
+            
     elif    "点击" in inputValue: 
             showinfoBtn(inputValue,i)
 
