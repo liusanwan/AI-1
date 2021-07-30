@@ -1,7 +1,6 @@
 # 本文档用于接收 孙佳 的前端数据，并用于预测判断值
 
 import json
-import tensorflow as tf
 import numpy as np
 from xpath import handleXpath
 from context import handleContext
@@ -211,7 +210,8 @@ def deepNetwork_match(data, model_url):
                 "A_text": A[max_index]["context"]["data"],
                 "btn": "input",
                 "B_xPath": B[i]["xpath"],
-                "A_xPath": A[max_index]["xpath"]})
+                "A_xPath": A[max_index]["xpath"],
+                "area": B[i]["area"]})
         Prob.append(prediction)
 
     return res
