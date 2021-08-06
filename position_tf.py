@@ -12,6 +12,7 @@ def handlePosition_tf(A_pos, B_pos):
     B_right_down_x, B_right_down_y = B_pos["right_down"]
 
     row = 0
+    col = 0
 # midPoin_dist	中心点距离
     A_midPoin = ((A_left_up_x+A_right_down_x)/2,
                  (A_left_up_y+A_right_down_y)/2)
@@ -48,4 +49,6 @@ def handlePosition_tf(A_pos, B_pos):
 
     # 返回元组：（第一项：中心点距离，第二项：最近距离）
     # return mid_dist*0.005, nearest_dist*0.005, row, col
-    return mid_dist*0.005, nearest_dist*0.005, row, A_midPoin[0], A_midPoin[1], B_midPoin[0], B_midPoin[1]
+    # return mid_dist*0.005, nearest_dist*0.005, row, A_midPoin[0], A_midPoin[1], B_midPoin[0], B_midPoin[1]
+    # return mid_dist*0.005, nearest_dist*0.005, row
+    return mid_dist*0.005, nearest_dist*0.005, (B_midPoin[0]-A_midPoin[0])*0.005, (B_midPoin[1]-A_midPoin[1])*0.005, (B_left_up_x-A_left_up_x)*0.005, (B_left_up_y-A_left_up_y)*0.005, (B_right_down_x-A_right_down_x)*0.005, (B_right_down_y-A_right_down_y)*0.005

@@ -26,16 +26,36 @@ def method_2(A_text, B_text):  # 长文本逐字符传递匹配算法
 def handleContext(A_cont, B_cont):
     A_text = A_cont['data']
     B_text = B_cont['data']
-    # 文本处理
-    # 如果 A_cont 或者 B_cont 存在空字符串 ""
-    if A_text == "" or B_text == "" or A_text == " " or B_text == " ":
-        return 0.0
 
-    # 如果二者都不是空字符串：
-    # 以A_cont为匹配项，B_cont为待匹配项
+    # 文本处理：1)文本匹配度；2)是否有冒号 “：”or “:”；3)A文本长度
+    con_match = 0
+    hasCol = 0
+    A_len = 0
+    # 第一步：计算文本匹配度
+    if A_text == "" or B_text == "" or A_text == " " or B_text == " ":
+        con_match = 0
     else:
         if len(A_text) <= 5:    # 如果A_cont的字符长度小于等于5, 调用短文本逐字符传递匹配算法 method_1(A_text,B_text)
             # 返回文字匹配率 conMatchRate
-            return method_1(A_text, B_text)
+            con_match = method_1(A_text, B_text)
         else:                   # 如果A_cont的字符长度大于5, 取A_cont前5个字符与后5个字符分别使用method_1算法与B_text进行匹配
-            return method_2(A_text, B_text)
+            con_match = method_2(A_text, B_text)
+    # 第二步：是否有冒号
+    if A_text[-1] == ":" or A_text[-1] == "：":
+        hasCol = 1
+    # 第三步：A文本长度
+    if len(A_text) == 0:
+        A_len = 0
+    elif len(A_text) == 1:
+        A_len = 0.5
+    elif len(A_text) > 15:
+        A_len = 0
+    else:
+        A_len = 1
+    return con_match, hasCol, A_len
+
+    # 文本处理
+    # 如果 A_cont 或者 B_cont 存在空字符串 ""
+    # ext_score = 0
+    # if ":" == A_text[-1] or "：" == A_text[-1]:
+    #     ext_score = 0.1

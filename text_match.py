@@ -33,6 +33,12 @@ def text_match(elements, text):
             max_score = new_score
             max_index = i
 
-    if max_index==-1 or text == "" or text.isspace() == True:
-        return "space"      # text是无效搜索, 前端main.py里面需要做出反应
+    if max_index==-1 and text != "" and text.isspace() != True:
+        for i in range(len(elements)):
+            new_score = score(elements[i]["B_text"], text)
+            if max_score < new_score:
+                max_score = new_score
+                max_index = i
+    elif max_index==-1 and (text == "" or text.isspace() == True):
+            return "space"      # text是无效搜索, 前端main.py里面需要做出反应
     return elements[max_index]

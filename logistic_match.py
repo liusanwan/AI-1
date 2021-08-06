@@ -1,7 +1,6 @@
 # 本文档用于接收 孙佳 的前端数据，并用于预测判断值
 
 import json
-import tensorflow as tf
 import numpy as np
 from xpath import handleXpath
 from context import handleContext
@@ -11,23 +10,36 @@ import tflearn
 import argparse
 
 
+# # Same parameters as of 'ApeNet'
+# inputData = tflearn.input_data(shape=[None, 12])
+# layer_1 = tflearn.fully_connected(
+#     inputData, 32, activation='sigmoid', name='layer_1')
+# layer_2 = tflearn.fully_connected(
+#     layer_1, 108, activation='sigmoid', name='layer_2')
+# layer_3 = tflearn.fully_connected(
+#     layer_2, 64, activation='sigmoid', name='layer_3')
+# outputData = tflearn.fully_connected(
+#     layer_3, 2, activation='softmax', name='output')
+# net = tflearn.regression(outputData)
 
 # Same parameters as of 'ApeNet'
-inputData = tflearn.input_data(shape=[None, 9])
+inputData = tflearn.input_data(shape=[None, 12])
 layer_1 = tflearn.fully_connected(
-    inputData, 32, activation='sigmoid', name='layer_1')
+    inputData, 64, activation='sigmoid', name='layer_1')
 layer_2 = tflearn.fully_connected(
-    layer_1, 108, activation='sigmoid', name='layer_2')
+    layer_1, 64, activation='sigmoid', name='layer_2')
 layer_3 = tflearn.fully_connected(
     layer_2, 64, activation='sigmoid', name='layer_3')
+layer_4 = tflearn.fully_connected(
+    layer_3, 64, activation='sigmoid', name='layer_4')
 outputData = tflearn.fully_connected(
-    layer_3, 2, activation='softmax', name='output')
+    layer_4, 2, activation='softmax', name='output')
 net = tflearn.regression(outputData)
+
 
 # Load the trained model
 model = tflearn.DNN(net)
 # model.load(model_url)
-
 
 
 def sigmoid(num):
@@ -58,17 +70,24 @@ def handleTestData(listA, listB):
             #     "row": 0,
             # }
             t = []
-            t1, t2, t5 = handlePosition(
+            t1, t2, t3, t4, t5, t6, t7, t8 = handlePosition_tf(
                 j["position"], i["position"])
-            t3 = handleXpath(
+            t9 = handleXpath(
                 j["xpath"], i["xpath"])
-            t4 = handleContext(
+            t10, t11, t12 = handleContext(
                 j["context"], i["context"])
             t.append(t1)
             t.append(t2)
             t.append(t3)
             t.append(t4)
             t.append(t5)
+            t.append(t6)
+            t.append(t7)
+            t.append(t8)
+            t.append(t9)
+            t.append(t10)
+            t.append(t11)
+            t.append(t12)
             temp.append(t)
         test.append(temp)
     print("A 和 B 一一对应已完成！")
@@ -89,11 +108,11 @@ def handleTestData_tf(listA, listB):
             #     "row": 0,
             # }
             t = []
-            t1, t2, t5, t6, t7, t8, t9 = handlePosition_tf(
+            t1, t2, t3, t4, t5, t6, t7, t8 = handlePosition_tf(
                 j["position"], i["position"])
-            t3 = handleXpath(
+            t9 = handleXpath(
                 j["xpath"], i["xpath"])
-            t4 = handleContext(
+            t10, t11, t12 = handleContext(
                 j["context"], i["context"])
             t.append(t1)
             t.append(t2)
@@ -104,9 +123,13 @@ def handleTestData_tf(listA, listB):
             t.append(t7)
             t.append(t8)
             t.append(t9)
+            t.append(t10)
+            t.append(t11)
+            t.append(t12)
             temp.append(t)
         test.append(temp)
     print("A 和 B 一一对应已完成！")
+
     return np.array(test)
 
 
@@ -169,9 +192,15 @@ def deepNetwork_match(data, model_url):
     print("正在进行神经网络算法匹配!")
     A = data["A"]
     B = data["B"]
-
+    for i in range(len(A)):
+        print("A[", i, "]", A[i])
     test = handleTestData_tf(A, B)
+    # print("test[5]:", test[2][5])
+    # print("test[6]*:", test[2][6])
+    # print("test[7]:", test[2][7])
 
+    # print("test[10]*:", test[2][10])
+    # print("test[11]:", test[2][11])
     # # Same parameters as of 'ApeNet'
     # inputData = tflearn.input_data(shape=[None, 9])
     # layer_1 = tflearn.fully_connected(
@@ -193,13 +222,18 @@ def deepNetwork_match(data, model_url):
     res = []  # res记录每个B对应的最优匹配的A所需的内容
     for i in range(len(test)):
         prediction = model.predict(test[i])
+        print("predict:", prediction)
         # 选择概率最大的A
         max_A_val = prediction.min(axis=0)
         if max_A_val[0] > 0.5:  # 可认为没有A能代表这个B
             res.append({
                 "A_text": "",
                 "btn": "input",
-                "B_xPath": B[i]["xpath"]})  # 如果认为没有与B匹配的A, 传入“null”
+                "B_xPath": B[i]["xpath"],
+                "A_xPath": A[max_index]["xpath"],
+                "area": B[i]["area"],
+                "B_text": B[i]["B_text"]
+                })  # 如果认为没有与B匹配的A, 传入“null”
         else:  # 可认为这个A能代表这个B
             max_index = -1
             # 从每个组数据中选择概率判断最大的A作为B的结果
@@ -212,7 +246,9 @@ def deepNetwork_match(data, model_url):
                 "btn": "input",
                 "B_xPath": B[i]["xpath"],
                 "A_xPath": A[max_index]["xpath"],
-                "area": B[i]["area"]})
+                "area": B[i]["area"],
+                "B_text": B[i]["B_text"]})
+        print(res[-1])
         Prob.append(prediction)
 
     return res
