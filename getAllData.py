@@ -7,6 +7,17 @@ import os
 from lxml import etree
 import datetime
 import time
+from getArea import getArea
+
+def getAreaPath(areaRange, xpath):
+    # 粉色，黄色，绿色，蓝色,紫色，天蓝色
+    color_list = ['rgb(224 22 22 / 39%)','rgb(229 229 243 / 45%)','rgb(226 110 236 / 33%)','rgb(162 243 83 / 33%)','rgb(255 231 3 / 50%)','rgb(255 137 3 / 50%)','rgb(245 255 3 / 53%)','rgb(15 224 191 / 53%)','rgb(157 70 228 / 26%)','rgb(8 8 8 / 26%)']
+    color_index = 0 
+    print(len(areaRange))
+    for ar in areaRange:
+        if ar in xpath:
+            return  color_list[color_index]
+        color_index += 1
 
 def getAllElements(driver):
     pageSource = driver.page_source
@@ -22,7 +33,7 @@ def getAllElements(driver):
     elements = []
     for element in tree.iter():
         xpath = element.getroottree().getpath(element)
-        xpath_list.append(xpath)
+        
         if 'body' not in xpath or 'script' in xpath or 'comment' in xpath:
             continue
         if '/input' in xpath or '/button' in xpath or '/a' in xpath:
@@ -60,7 +71,10 @@ def getAllElements(driver):
                 continue
             elements.append(elem)
             xpath_dict_label[xpath] = {'value':element.text,'elem':elem,'type':'label'}
-
+        xpath_list.append(xpath)
+    
+    areaRange = getArea(xpath_list)
+    
 
 
     ####补充坐标####
@@ -82,6 +96,7 @@ def getAllElements(driver):
         data['position'] = xpath_dict_label[xdl]['position']
         data['xpath'] = xdl
         data['context'] = {'data':text}
+        data['area'] = getAreaPath(areaRange, xdl)
         label_list.append(data)
         
 
@@ -107,6 +122,7 @@ def getAllElements(driver):
         data['position'] = xpath_dict_input[xdi]['position']
         data['xpath'] = xdi
         data['context'] = {'data':text}
+        data['area'] = getAreaPath(areaRange, xdi)
         input_list.append(data)
 
     for xdb in xpath_dict_button:
@@ -114,10 +130,12 @@ def getAllElements(driver):
         data = {}
         data['A_text'] = text
         data['B_xPath'] = xdb
+        data['area'] = getAreaPath(areaRange, xdb)
         btn_list.append(data)
 
     jsonInfo = {}
     jsonInfo['A'] = label_list
     jsonInfo['B'] = input_list
     jsonInfo['C'] = btn_list
-    return jsonInfo
+    return jsonInfo,areaRange
+

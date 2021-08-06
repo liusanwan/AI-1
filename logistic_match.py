@@ -211,7 +211,8 @@ def deepNetwork_match(data, model_url):
                 "A_text": A[max_index]["context"]["data"],
                 "btn": "input",
                 "B_xPath": B[i]["xpath"],
-                "A_xPath": A[max_index]["xpath"]})
+                "A_xPath": A[max_index]["xpath"],
+                "area": B[i]["area"]})
         Prob.append(prediction)
 
     return res
